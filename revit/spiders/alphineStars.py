@@ -1,35 +1,16 @@
 import scrapy
 import re
 import Database.Database as Database
-from scrapy.http import Request
+from revit.spiders import revitSpider
 
-class AlphineStars(scrapy.Spider):
+class AlphineStarsSpider(revitSpider.RevitSpider):
     db, db_enigne = Database.initSession()
-    name = "alphineStars"
+    name = "alpineStars"
     COMPANY = "Alpinestars"
-
     start_urls = []
 
-    def start_requests(self):
-        session = self.db()
-        companyUrl = session.query(Database.CompanyUrls). \
-            filter_by(name=self.COMPANY).first()
-        companyUrl_id = companyUrl.id
-        self.company_id = companyUrl_id
-        result = session.query(Database.Products).filter(Database.Products.companyId == self.company_id, Database.Products.isParsed == False).all()
-
-        # To crawl only one product
-        # result = session.query(Database.Products).filter(Database.Products.companyId == self.company_id,
-                                                         # Database.Products.isParsed == False).first()
-        # meta = {'productId': result.productId}
-        # yield Request(result.productUrl, dont_filter=True, meta=meta)
-
-        #To crawl entire products
-        for res in result:
-            # self.start_urls.append(res.url)
-            meta = {'productId': res.productId}
-            yield Request(res.productUrl, dont_filter=True)
-
+    def __init__(self):
+        super().__init__(self.COMPANY, self.name)
 
     def parse(self, response):
         session = self.db()

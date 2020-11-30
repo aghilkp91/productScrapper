@@ -82,9 +82,6 @@ def insertCompanyUrls(Session, engine, db):
             result = chardet.detect(f.read())
             df = pd.read_csv(filename, encoding=result['encoding'])
             print(df['name'])
-            num_rows = len(df)
-            # for i in range(num_rows):
-            #     df.iloc[i:i+1].to_sql('CompanyUrls', con=engine, index=False, if_exists="append", schema='{0}.dbo'.format(db))
             df.to_sql('CompanyUrls', con=engine, index=False, if_exists="append", schema='{0}.dbo'.format(db), method='multi')
             print(engine.execute("SELECT * FROM CompanyUrls").fetchall())
 

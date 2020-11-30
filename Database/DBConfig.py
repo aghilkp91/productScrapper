@@ -5,6 +5,7 @@ class DatabaseConfig(object):
     user = 'root'
     password = 'pass'
     db = 'webScrapping'
+    dropbox_access_token = ''
 
 
     def __init__(self):

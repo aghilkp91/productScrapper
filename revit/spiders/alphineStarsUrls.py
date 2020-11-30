@@ -7,11 +7,11 @@ from revit.spiders import revitUrlSpider
 from scrapy import signals
 
 
-class AlphineStarsSpider(revitUrlSpider.RevitUrlSpider):
+class AlphineStarsUrlSpider(revitUrlSpider.RevitUrlSpider):
     db, db_enigne = Database.initSession()
     company_id = None
     start_urls = []
-    name = "alphineStarsUrls"
+    name = "alpineStarsUrls"
     COMPANY = "Alpinestars"
     TOTAL_PRODUCTS_PER_PAGE = 24
 
@@ -28,14 +28,14 @@ class AlphineStarsSpider(revitUrlSpider.RevitUrlSpider):
             productId = uuid.uuid3(uuid.NAMESPACE_URL, productUrl).hex
             companyId = self.company_id
 
-            dicts = {'productUrl': productUrl, 'productId': productId, 'companyId': companyId}
+            dicts = {'productUrl': productUrl, 'productId': productId, 'companyId': companyId, 'isParsed': False}
             lists.append(dicts)
         # print(dicts)
         # filename = 'revit/spiders/temp/-%s.txt' % page_name
         # with open(filename, 'a') as f:
         #     f.write(str(lists))
         session = self.db()
-        session.bulk_insert_mappings(Database.Products, lists)
+        session.bulk_update_mappings(Database.Products, lists)
         session.commit()
 
         # Finding total products in page

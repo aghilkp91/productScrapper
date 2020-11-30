@@ -1,7 +1,9 @@
 import scrapy
 import Database.Database as Database
 from scrapy import signals
+import logging
 
+logger = logging.getLogger(__name__)
 
 class RevitUrlSpider(scrapy.Spider):
     db, db_enigne = Database.initSession()
@@ -20,6 +22,7 @@ class RevitUrlSpider(scrapy.Spider):
         result = session.query(Database.CategoryUrls).filter_by(companyId=self.company_id).all()
 
         for res in result:
+            logger.debug("Reulting url form DB : %s" %res.url)
             self.start_urls.append(res.url)
 
         print(self.start_urls)
