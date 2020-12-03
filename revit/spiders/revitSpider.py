@@ -1,10 +1,12 @@
 import scrapy
-import re
+import os
 import Database.Database as Database
 from scrapy.http import Request
+from revit import imageUtils
 
 class RevitSpider(scrapy.Spider):
     db, db_enigne = Database.initSession()
+    img_utils = imageUtils.ImageUtils()
 
     def __init__(self, company, name):
         self.company_id = None
@@ -31,5 +33,13 @@ class RevitSpider(scrapy.Spider):
         #     # self.start_urls.append(res.url)
         #     meta = {'productId': res.productId}
         #     yield Request(res.productUrl, dont_filter=True)
+
+    def get_image(self, response, image_url, id):
+        image_name = id + '.' + image_url.split(".")[-1]
+        downloaded_image = imageUtils.ImageUtils.downloadImage(self.img_utils, image_url, image_name)
+        uploaded_image = imageUtils.ImageUtils.uploadImage(self.img_utils, downloaded_image, image_name)
+        os.remove(downloaded_image)
+        return uploaded_image
+
 
 

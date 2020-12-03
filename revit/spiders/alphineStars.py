@@ -23,6 +23,8 @@ class AlphineStarsSpider(revitSpider.RevitSpider):
         size = '||'.join(map(lambda x:x.get().strip(), response.xpath('//*[contains(@id,"product_form")]/div[1]/fieldset[1]/div/div/label/input/@value')))
         gender = 'Women' if re.search('women', itemName.lower()) else 'Men'
         # image
+        image_url = 'https:' + response.xpath('//div[contains(@class,"product-gallery")]/img/@src').get().split('?')[0]
+        upload_image_path = self.get_image(response, image_url, response.meta['productId'])
         print(response.meta['productId'])
         dicts = {
             'itemName': itemName,
@@ -32,6 +34,7 @@ class AlphineStarsSpider(revitSpider.RevitSpider):
             'color': color,
             'size': size,
             'gender': gender,
+            'image': upload_image_path,
             'isParsed': True
         }
 
