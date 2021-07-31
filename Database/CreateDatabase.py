@@ -3,6 +3,11 @@ import sys
 
 
 if __name__ == "__main__":
+    """
+        This main function is used to create a database.
+
+        It first checks if the database exists. if we get true, we print connection successful or else we show the error.
+    """
     status, code, msg = Database.checkDatabase()
     if status:
         print("Connected to Database ")

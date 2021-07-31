@@ -3,32 +3,32 @@ import uuid
 import re
 import Database.Database as Database
 from revit.spiders import ParentUrlSpider
+import logging
 
-from scrapy import signals
+logger = logging.getLogger(__name__)
 
-
-class AlphineStarsUrlSpider(ParentUrlSpider.RevitUrlSpider):
+class RevzillaUrlsSpider(ParentUrlSpider.RevitUrlSpider):
     db, db_enigne = Database.initSession()
     company_id = None
     start_urls = []
-    name = "alpineStarsUrls"
-    COMPANY = "Alpinestars"
-    TOTAL_PRODUCTS_PER_PAGE = 24
+    name = "revzillaUrls"
+    COMPANY = "Revzilla"
+    TOTAL_PRODUCTS_PER_PAGE = 12
 
     def __init__(self):
         super().__init__(self.COMPANY, self.name, self.TOTAL_PRODUCTS_PER_PAGE)
 
     def parse(self, response):
-        # finding urls
-        page_name = response.url.split('/')[-1]
         session = self.db()
         reviewids_results = session.query(Database.Products.productId).filter(Database.Products.companyId == self.company_id).all()
         review_ids = [ item[0] for item in reviewids_results ]
+        # finding urls
         lists = []
         update_lists = []
+        # logger.info("Starting crawling of %s" % response.url)
         print("Starting crawling of %s" % response.url)
-        for url in response.xpath('//h2[@class="productitem--title"]/a/@href'):
-            productUrl = response.url.split("?")[0] + url.get()
+        for url in response.xpath("//a[contains(@class,'product-tile')]/@href"):
+            productUrl = "https://www.revzilla.com/" + url.get()
             productId = uuid.uuid3(uuid.NAMESPACE_URL, productUrl).hex
             companyId = self.company_id
 
@@ -42,7 +42,6 @@ class AlphineStarsUrlSpider(ParentUrlSpider.RevitUrlSpider):
         # filename = 'revit/spiders/temp/-%s.txt' % page_name
         # with open(filename, 'a') as f:
         #     f.write(str(lists))
-
         if (len(lists) > 0):
             session.bulk_insert_mappings(Database.Products, lists)
             session.commit()
@@ -51,25 +50,17 @@ class AlphineStarsUrlSpider(ParentUrlSpider.RevitUrlSpider):
             session.commit()
 
         # Finding total products in page
-        total_products = 0
-        for script in response.xpath("//script/text()"):
-            # m = re.findall('collection_count', script.get())
-            m = re.search('collection_count: (.+?),', script.get())
-
-            if m:
-                # m = re.search('collection_count: (.+?),', script.get())
-                # print(m)
-                total_products = int(re.findall(r'\d+', m.group(1))[0])
-        print("Total products : %s" % str(total_products))
+        total_pages = int(response.xpath("//span[contains(@class,'pagination')]/a[last()]/text()").get())
 
         # looping into next page
-        page = re.findall('page=\d+', response.url)
-        if page:
-            print('page %s' % page)
-            curr_page_req = int(re.findall('\d+', page[0])[0])
+        curr_page = re.findall('page=\d+', response.url)
+        if curr_page:
+            logger.debug('page %s' % curr_page)
+            curr_page_req = int(re.findall('\d+', curr_page[0])[0])
         else:
             curr_page_req = 1
-        next_page = curr_page_req + 1 if (total_products / (self.TOTAL_PRODUCTS_PER_PAGE * curr_page_req)) >= 1 else 0
+        next_page = curr_page_req + 1 if curr_page_req + 1 <= total_pages else 0
+        print("Next page %s" %next_page)
         if next_page:
-            next_page_url = response.url.split("?page")[0] + "?page=" + str(next_page)
+            next_page_url = response.url.split("?")[0] + "?view_all=&page=" + str(next_page)
             yield scrapy.Request(response.urljoin(next_page_url), callback=self.parse)

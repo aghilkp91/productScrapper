@@ -1,4 +1,4 @@
-.PHONY: install flake flake add_audio add_directory recognize
+#PHONY: install flake flake add_audio add_directory recognize
 
 install:
 	@echo "*** Installing dependencies ***"
@@ -12,3 +12,8 @@ create_db:
 	@echo "*** Creating the database ***"
 	python3 Database/createDatabase.py
 
+html:
+	@echo "*** Building HTML Documentation***"
+	cd docs
+	sphinx-apidoc -f -o .\source\ ..
+	sphinx-build -b html source build
