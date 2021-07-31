@@ -1,5 +1,5 @@
 # Web-Scrapping
-Web Scrapping Project for Revit using Scrapy and Microsoft Server
+Web Scrapping Project using Scrapy and Microsoft Server to scrap the product details from various websites
 
 To Create DB and Tables :
 Add username and password into DatabaseDBConfig.py
